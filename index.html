@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Mikey情感导师 - 你的私人恋爱顾问</title>
+  <link rel="stylesheet" href="css/design-system.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <style>
+    /* Prototype-specific inline styles for demo interactions */
+    .screen { display: none; }
+    .screen--active { display: flex; flex-direction: column; height: 100%; }
+    .fade-in { animation: fadeIn 0.3s ease forwards; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .stagger-1 { animation-delay: 0.1s; opacity: 0; }
+    .stagger-2 { animation-delay: 0.2s; opacity: 0; }
+    .stagger-3 { animation-delay: 0.3s; opacity: 0; }
+    .stagger-4 { animation-delay: 0.4s; opacity: 0; }
+    .stagger-5 { animation-delay: 0.5s; opacity: 0; }
+
+    /* Quick sample chips */
+    .sample-chips { display: flex; flex-direction: column; gap: var(--space-2); max-width: 280px; }
+    .sample-chip {
+      padding: var(--space-3) var(--space-4);
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-secondary);
+      border-radius: var(--radius-md);
+      font-size: var(--text-base);
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all var(--duration-fast);
+      text-align: left;
+    }
+    .sample-chip:hover { border-color: var(--brand-accent); background: var(--bg-tertiary); }
+    .sample-chip:active { transform: scale(0.97); }
+
+    /* Clipboard banner */
+    .clipboard-banner {
+      display: none;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      background: color-mix(in srgb, var(--brand-accent) 10%, var(--bg-elevated));
+      border: 1px solid var(--brand-accent);
+      border-radius: var(--radius-md);
+      margin: var(--space-3) var(--space-4);
+      cursor: pointer;
+    }
+    .clipboard-banner--visible { display: flex; }
+    .clipboard-banner__text { flex: 1; font-size: var(--text-sm); color: var(--text-primary); }
+    .clipboard-banner__action { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--brand-accent); }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+
+    <!-- ============ MOBILE HEADER ============ -->
+    <header class="app-header">
+      <div class="app-header__title">Mikey情感导师</div>
+      <div class="app-header__actions">
+        <div class="theme-toggle" role="radiogroup" aria-label="主题切换">
+          <button class="theme-toggle__option" data-theme="light" role="radio" aria-checked="false">浅色</button>
+          <button class="theme-toggle__option" data-theme="dark" role="radio" aria-checked="false">深色</button>
+          <button class="theme-toggle__option theme-toggle__option--active" data-theme="system" role="radio" aria-checked="true">自动</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- ============ DESKTOP SIDEBAR ============ -->
+    <aside class="app-sidebar">
+      <div class="sidebar__logo">
+        <span style="font-size: 28px;">M</span>
+        <span class="sidebar__logo-text">Mikey情感导师</span>
+      </div>
+      <nav class="sidebar__nav">
+        <button class="sidebar__nav-item sidebar__nav-item--active" data-tab="analysis" onclick="switchTab('analysis')">
+          <span>💬</span> 消息分析
+        </button>
+        <button class="sidebar__nav-item" data-tab="learn" onclick="switchTab('learn')">
+          <span>📚</span> 恋爱学堂
+        </button>
+        <button class="sidebar__nav-item" data-tab="history" onclick="switchTab('history')">
+          <span>📋</span> 分析记录
+        </button>
+        <button class="sidebar__nav-item" data-tab="settings" onclick="switchTab('settings')">
+          <span>⚙️</span> 设置
+        </button>
+      </nav>
+      <div class="sidebar__footer">
+        <div class="theme-toggle" role="radiogroup" aria-label="主题切换">
+          <button class="theme-toggle__option" data-theme="light" role="radio" aria-checked="false">浅色</button>
+          <button class="theme-toggle__option" data-theme="dark" role="radio" aria-checked="false">深色</button>
+          <button class="theme-toggle__option theme-toggle__option--active" data-theme="system" role="radio" aria-checked="true">自动</button>
+        </div>
+        <div style="margin-top: var(--space-3);">
+          <button class="btn btn--primary btn--full btn--sm">升级VIP</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ============ MAIN CONTENT ============ -->
+    <main class="app-content app-content--with-tab-bar">
+
+      <!-- SCREEN: Analysis (Primary) -->
+      <section id="screen-analysis" class="screen screen--active">
+        <div class="chat-layout">
+          <div class="chat-messages scroll-y" id="chat-messages">
+
+            <!-- Empty state -->
+            <div class="empty-state" id="empty-state">
+              <div class="empty-state__icon" style="font-size: 48px;">💬</div>
+              <h2 class="empty-state__title">粘贴她的消息</h2>
+              <p class="empty-state__desc">Mikey帮你秒回分析，给你三种回复策略</p>
+              <div style="margin-top: var(--space-6);">
+                <p class="text-caption" style="margin-bottom: var(--space-3);">试试这些：</p>
+                <div class="sample-chips">
+                  <button class="sample-chip" onclick="analyzeMessage('今天好累啊')">「今天好累啊」</button>
+                  <button class="sample-chip" onclick="analyzeMessage('你在干嘛呢')">「你在干嘛呢」</button>
+                  <button class="sample-chip" onclick="analyzeMessage('哈哈哈好吧')">「哈哈哈好吧」</button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Input Area -->
+          <div class="chat-input-area">
+            <div class="input-composer">
+              <button class="input-composer__btn" title="上传截图" onclick="document.getElementById('file-upload').click()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+              </button>
+              <input type="file" id="file-upload" accept="image/*" style="display:none">
+              <textarea class="input-composer__textarea" id="message-input" placeholder="粘贴她的消息..." rows="1" oninput="autoResize(this)"></textarea>
+              <button class="input-composer__btn input-composer__btn--send" id="send-btn" onclick="sendMessage()" disabled>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN: Knowledge Base -->
+      <section id="screen-learn" class="screen">
+        <div class="container container--lg" style="padding-top: var(--space-6); padding-bottom: var(--space-20);">
+          <h1 class="text-title" style="margin-bottom: var(--space-6);">恋爱学堂</h1>
+
+          <!-- Categories -->
+          <div style="display: flex; gap: var(--space-2); overflow-x: auto; padding-bottom: var(--space-4); -webkit-overflow-scrolling: touch;">
+            <button class="btn btn--sm btn--primary">全部</button>
+            <button class="btn btn--sm btn--secondary">初次约会</button>
+            <button class="btn btn--sm btn--secondary">聊天技巧</button>
+            <button class="btn btn--sm btn--secondary">暧昧升级</button>
+            <button class="btn btn--sm btn--secondary">挽回攻略</button>
+          </div>
+
+          <!-- Article Grid -->
+          <div class="grid-cards">
+            <div class="article-card">
+              <div class="article-card__image" style="background: linear-gradient(135deg, var(--brand-primary), var(--brand-primary-light));"></div>
+              <div class="article-card__body">
+                <div class="article-card__category">聊天技巧</div>
+                <h3 class="article-card__title">聊天冷场？5个万能话题救活对话</h3>
+                <p class="article-card__excerpt">再也不用担心突然没话说的尴尬，用这五个话题自然切入...</p>
+              </div>
+            </div>
+            <div class="article-card">
+              <div class="article-card__image" style="background: linear-gradient(135deg, var(--brand-accent-dark), var(--brand-accent));"></div>
+              <div class="article-card__body">
+                <div class="article-card__category">潜台词解读</div>
+                <h3 class="article-card__title">她说"随便"到底什么意思？</h3>
+                <p class="article-card__excerpt">女生口中的「随便」「都行」「你看着办」背后的真实含义...</p>
+              </div>
+            </div>
+            <div class="article-card">
+              <div class="article-card__image" style="background: linear-gradient(135deg, var(--brand-success-dark), var(--brand-success));"></div>
+              <div class="article-card__body">
+                <div class="article-card__category">约会指南</div>
+                <h3 class="article-card__title">约会地点选择终极指南</h3>
+                <p class="article-card__excerpt">不同阶段适合不同场景，初次见面和暧昧期的选择完全不同...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN: History -->
+      <section id="screen-history" class="screen">
+        <div class="container container--chat" style="padding-top: var(--space-6); padding-bottom: var(--space-20);">
+          <h1 class="text-title" style="margin-bottom: var(--space-6);">分析记录</h1>
+
+          <p class="text-caption" style="margin-bottom: var(--space-3);">今天</p>
+          <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+            <div class="history-item" onclick="switchTab('analysis'); replayAnalysis('今天好累啊')">
+              <div class="history-item__preview">
+                <div class="history-item__message">「今天好累啊」</div>
+                <div class="history-item__meta">
+                  <span class="stage-badge" style="font-size: 11px; padding: 2px 8px;">暧昧初期</span>
+                  <span>选择了幽默回复</span>
+                  <span>14:32</span>
+                </div>
+              </div>
+              <span class="history-item__arrow">→</span>
+            </div>
+            <div class="history-item">
+              <div class="history-item__preview">
+                <div class="history-item__message">「你在干嘛呢」</div>
+                <div class="history-item__meta">
+                  <span class="stage-badge" style="font-size: 11px; padding: 2px 8px;">暧昧升温</span>
+                  <span>选择了引导回复</span>
+                  <span>12:15</span>
+                </div>
+              </div>
+              <span class="history-item__arrow">→</span>
+            </div>
+          </div>
+
+          <p class="text-caption" style="margin-top: var(--space-6); margin-bottom: var(--space-3);">昨天</p>
+          <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+            <div class="history-item">
+              <div class="history-item__preview">
+                <div class="history-item__message">「哈哈哈好吧」</div>
+                <div class="history-item__meta">
+                  <span class="stage-badge" style="font-size: 11px; padding: 2px 8px;">初识阶段</span>
+                  <span>选择了共情回复</span>
+                  <span>22:08</span>
+                </div>
+              </div>
+              <span class="history-item__arrow">→</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN: Settings -->
+      <section id="screen-settings" class="screen">
+        <div class="container container--chat" style="padding-top: var(--space-6); padding-bottom: var(--space-20);">
+          <h1 class="text-title" style="margin-bottom: var(--space-6);">设置</h1>
+
+          <p class="text-caption" style="margin-bottom: var(--space-2);">个人信息</p>
+          <div class="settings-group" style="margin-bottom: var(--space-6);">
+            <div class="settings-item">
+              <div class="settings-item__left"><span class="settings-item__label">当前阶段</span></div>
+              <span class="settings-item__value">暧昧初期 ›</span>
+            </div>
+            <div class="settings-item">
+              <div class="settings-item__left"><span class="settings-item__label">聊天对象</span></div>
+              <span class="settings-item__value">未设置 ›</span>
+            </div>
+            <div class="settings-item">
+              <div class="settings-item__left"><span class="settings-item__label">你的风格</span></div>
+              <span class="settings-item__value">幽默型 ›</span>
+            </div>
+          </div>
+
+          <p class="text-caption" style="margin-bottom: var(--space-2);">偏好设置</p>
+          <div class="settings-group" style="margin-bottom: var(--space-6);">
+            <div class="settings-item">
+              <div class="settings-item__left"><span class="settings-item__label">外观模式</span></div>
+              <div class="theme-toggle" role="radiogroup" aria-label="主题切换">
+                <button class="theme-toggle__option" data-theme="light" role="radio" aria-checked="false">浅色</button>
+                <button class="theme-toggle__option" data-theme="dark" role="radio" aria-checked="false">深色</button>
+                <button class="theme-toggle__option theme-toggle__option--active" data-theme="system" role="radio" aria-checked="true">自动</button>
+              </div>
+            </div>
+            <div class="settings-item">
+              <div class="settings-item__left"><span class="settings-item__label">语言</span></div>
+              <span class="settings-item__value">简体中文 ›</span>
+            </div>
+            <div class="settings-item">
+              <div class="settings-item__left"><span class="settings-item__label">回复风格偏好</span></div>
+              <span class="settings-item__value">均衡 ›</span>
+            </div>
+          </div>
+
+          <p class="text-caption" style="margin-bottom: var(--space-2);">会员与订阅</p>
+          <div class="settings-group" style="margin-bottom: var(--space-6);">
+            <div class="settings-item">
+              <div class="settings-item__left"><span class="settings-item__label">今日剩余</span></div>
+              <span class="settings-item__value">3 / 5次 ›</span>
+            </div>
+            <div class="settings-item">
+              <div class="settings-item__left"><span class="settings-item__label">升级VIP</span></div>
+              <span class="settings-item__value" style="color: var(--brand-accent); font-weight: 600;">无限次分析 ›</span>
+            </div>
+          </div>
+
+          <p class="text-caption" style="margin-bottom: var(--space-2);">其他</p>
+          <div class="settings-group">
+            <div class="settings-item">
+              <div class="settings-item__left"><span class="settings-item__label">使用教程</span></div>
+              <span class="settings-item__value">›</span>
+            </div>
+            <div class="settings-item">
+              <div class="settings-item__left"><span class="settings-item__label">反馈建议</span></div>
+              <span class="settings-item__value">›</span>
+            </div>
+            <div class="settings-item">
+              <div class="settings-item__left"><span class="settings-item__label">隐私政策</span></div>
+              <span class="settings-item__value">›</span>
+            </div>
+            <div class="settings-item">
+              <div class="settings-item__left"><span class="settings-item__label">关于Mikey</span></div>
+              <span class="settings-item__value">v1.0.0 ›</span>
+            </div>
+          </div>
+
+          <p style="text-align: center; color: var(--text-tertiary); font-size: var(--text-sm); margin-top: var(--space-8);">Mikey情感导师 v1.0.0</p>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ============ MOBILE TAB BAR ============ -->
+    <nav class="app-tab-bar">
+      <button class="tab-bar__item tab-bar__item--active" data-tab="analysis" onclick="switchTab('analysis')">
+        <span style="font-size: 20px;">💬</span>
+        <span>分析</span>
+      </button>
+      <button class="tab-bar__item" data-tab="learn" onclick="switchTab('learn')">
+        <span style="font-size: 20px;">📚</span>
+        <span>学习</span>
+      </button>
+      <button class="tab-bar__item" data-tab="history" onclick="switchTab('history')">
+        <span style="font-size: 20px;">📋</span>
+        <span>历史</span>
+      </button>
+      <button class="tab-bar__item" data-tab="settings" onclick="switchTab('settings')">
+        <span style="font-size: 20px;">⚙️</span>
+        <span>设置</span>
+      </button>
+    </nav>
+
+    <!-- Toast notification -->
+    <div class="toast" id="toast">已复制到剪贴板</div>
+
+  </div>
+
+  <script src="js/theme-manager.js"></script>
+  <script>
+    /* ========== TAB NAVIGATION ========== */
+    function switchTab(tabName) {
+      // Hide all screens
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('screen--active'));
+      // Show target
+      const target = document.getElementById('screen-' + tabName);
+      if (target) target.classList.add('screen--active');
+
+      // Update tab bar
+      document.querySelectorAll('.tab-bar__item').forEach(t => {
+        t.classList.toggle('tab-bar__item--active', t.dataset.tab === tabName);
+      });
+      // Update sidebar
+      document.querySelectorAll('.sidebar__nav-item').forEach(t => {
+        t.classList.toggle('sidebar__nav-item--active', t.dataset.tab === tabName);
+      });
+    }
+
+    /* ========== INPUT HANDLING ========== */
+    const messageInput = document.getElementById('message-input');
+    const sendBtn = document.getElementById('send-btn');
+
+    messageInput.addEventListener('input', () => {
+      sendBtn.disabled = messageInput.value.trim() === '';
+    });
+
+    messageInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        if (messageInput.value.trim()) sendMessage();
+      }
+    });
+
+    function autoResize(el) {
+      el.style.height = 'auto';
+      el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+    }
+
+    function sendMessage() {
+      const text = messageInput.value.trim();
+      if (!text) return;
+      messageInput.value = '';
+      messageInput.style.height = 'auto';
+      sendBtn.disabled = true;
+      analyzeMessage(text);
+    }
+
+    /* ========== CORE: ANALYZE MESSAGE ========== */
+    function analyzeMessage(text) {
+      const chat = document.getElementById('chat-messages');
+      const empty = document.getElementById('empty-state');
+      if (empty) empty.style.display = 'none';
+
+      // Add user message bubble
+      const userBubble = document.createElement('div');
+      userBubble.className = 'message-bubble message-bubble--user fade-in';
+      userBubble.innerHTML = `
+        <div class="message-bubble__label">她的消息</div>
+        <div>${escapeHtml(text)}</div>
+      `;
+      chat.appendChild(userBubble);
+
+      // Add loading skeleton
+      const loading = document.createElement('div');
+      loading.className = 'message-bubble message-bubble--ai fade-in';
+      loading.id = 'loading-indicator';
+      loading.innerHTML = `
+        <div style="display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-3);">
+          <span style="font-size: 16px;">🔍</span>
+          <span style="font-weight: 600;">Mikey分析中...</span>
+        </div>
+        <div class="skeleton skeleton--heading"></div>
+        <div class="skeleton skeleton--text"></div>
+        <div class="skeleton skeleton--text" style="width: 60%;"></div>
+      `;
+      chat.appendChild(loading);
+      chat.scrollTop = chat.scrollHeight;
+
+      // Simulate AI response after delay
+      setTimeout(() => {
+        loading.remove();
+        renderAnalysis(chat, text);
+        chat.scrollTop = chat.scrollHeight;
+      }, 1500);
+    }
+
+    /* ========== RENDER AI ANALYSIS ========== */
+    function renderAnalysis(container, originalText) {
+      // Demo data based on input
+      const analyses = {
+        '今天好累啊': {
+          stage: '暧昧初期', tempPercent: 55, tempLabel: '中等偏暖',
+          subtext: '寻求关心和陪伴，向你展示脆弱面是信任的表现',
+          mines: ['别说"多喝热水"', '别说"那你早点休息"', '别追问"为什么累"'],
+          responses: [
+            { type: 'humor', tag: 'A 幽默', text: '累的话让我背你啊🙈 虽然隔着屏幕有点难', why: '用轻松的方式拉近距离，不给压力' },
+            { type: 'empathy', tag: 'B 共情', text: '辛苦了，想听你说说今天怎么了', why: '展示你在意她的感受，创造深聊机会' },
+            { type: 'guidance', tag: 'C 引导', text: '你值得好好放松一下，周末一起去公园走走？', why: '借机推进关系，制造线下见面的机会' }
+          ]
+        },
+        '你在干嘛呢': {
+          stage: '暧昧升温', tempPercent: 70, tempLabel: '偏暖',
+          subtext: '主动找你聊天，说明她在想你。这是一个很好的开聊信号',
+          mines: ['别只回"没干嘛"', '别说"打游戏"然后不说了', '别反问"你呢"就结束'],
+          responses: [
+            { type: 'humor', tag: 'A 幽默', text: '在想你啊，被你发现了😏', why: '大胆调侃，暧昧升温，测试她的反应' },
+            { type: 'empathy', tag: 'B 共情', text: '刚看完一部剧，突然想跟你分享一个片段', why: '制造共同话题，给对话一个延续的方向' },
+            { type: 'guidance', tag: 'C 引导', text: '在研究周末去哪吃好吃的，你有推荐吗？', why: '自然引出约会话题，让她参与计划' }
+          ]
+        },
+        '哈哈哈好吧': {
+          stage: '初识阶段', tempPercent: 40, tempLabel: '中性偏冷',
+          subtext: '回复比较敷衍，可能话题不够有趣，需要换一个方向引起她的兴趣',
+          mines: ['别继续追问同一个话题', '别发"嗯嗯"等封闭式回复', '别以为她不感兴趣就放弃'],
+          responses: [
+            { type: 'humor', tag: 'A 幽默', text: '感觉你笑得很敷衍啊😂 来，给你讲个我今天遇到的奇葩事', why: '自嘲式幽默化解冷场，同时抛出新话题' },
+            { type: 'empathy', tag: 'B 共情', text: '话说你今天心情怎么样？', why: '转换话题方向，从聊事转为聊感受' },
+            { type: 'guidance', tag: 'C 引导', text: '对了，最近有个超火的展/店你知道吗？', why: '完全切换话题，用好奇心重新吸引注意力' }
+          ]
+        }
+      };
+
+      const data = analyses[originalText] || analyses['今天好累啊'];
+
+      const analysisHTML = `
+        <div class="analysis-card fade-in">
+          <div class="analysis-card__header">
+            <div class="analysis-card__header-icon">🔍</div>
+            <div class="analysis-card__header-title">Mikey分析结果</div>
+          </div>
+          <div class="analysis-card__body">
+
+            <!-- Diagnosis -->
+            <div class="diagnosis-section fade-in stagger-1">
+              <div class="diagnosis-section__title">📊 情境诊断</div>
+              <div style="display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap;">
+                <span class="stage-badge">${data.stage}</span>
+              </div>
+              <div class="temp-meter">
+                <span class="temp-meter__label">话题温度</span>
+                <div class="temp-meter__bar">
+                  <div class="temp-meter__fill" style="width: ${data.tempPercent}%;"></div>
+                </div>
+                <span class="temp-meter__label">${data.tempLabel}</span>
+              </div>
+            </div>
+
+            <!-- Subtext -->
+            <div class="subtext-card fade-in stagger-2">
+              <div class="diagnosis-section__title">💭 潜台词分析</div>
+              <div class="subtext-card__original">她说：「${escapeHtml(originalText)}」</div>
+              <div class="subtext-card__meaning">${data.subtext}</div>
+            </div>
+
+            <!-- Minefield -->
+            <div class="minefield fade-in stagger-3">
+              <div class="minefield__title">⚠️ 排雷区</div>
+              ${data.mines.map(m => `<div class="minefield__item">${m}</div>`).join('')}
+            </div>
+
+            <!-- Response Options -->
+            <div style="margin-top: var(--space-2);">
+              <div class="diagnosis-section__title" style="margin-bottom: var(--space-3);">💬 推荐回复</div>
+              <div class="grid-responses">
+                ${data.responses.map((r, i) => `
+                  <div class="response-option response-option--${r.type} fade-in stagger-${i + 3}" onclick="selectResponse(this, '${escapeHtml(r.text)}')">
+                    <div class="response-option__tag">${r.tag}</div>
+                    <div class="response-option__text">${r.text}</div>
+                    <div class="response-option__explanation">💡 ${r.why}</div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+          </div>
+        </div>
+      `;
+
+      const wrapper = document.createElement('div');
+      wrapper.style.alignSelf = 'stretch';
+      wrapper.innerHTML = analysisHTML;
+      container.appendChild(wrapper);
+    }
+
+    /* ========== RESPONSE SELECTION ========== */
+    function selectResponse(element, text) {
+      // Remove selected from siblings
+      element.closest('.grid-responses').querySelectorAll('.response-option').forEach(el => {
+        el.classList.remove('response-option--selected');
+      });
+      element.classList.add('response-option--selected');
+
+      // Remove existing action bar
+      const existing = element.closest('.analysis-card__body').querySelector('.action-bar');
+      if (existing) existing.remove();
+
+      // Add action bar
+      const actionBar = document.createElement('div');
+      actionBar.className = 'action-bar fade-in';
+      actionBar.innerHTML = `
+        <button class="action-bar__btn action-bar__btn--copy" onclick="copyText('${text.replace(/'/g, "\\'")}')">
+          📋 复制回复
+        </button>
+        <button class="action-bar__btn action-bar__btn--edit" onclick="alert('自定义修改功能开发中')">
+          ✏️ 自定义修改
+        </button>
+      `;
+      element.closest('.analysis-card__body').appendChild(actionBar);
+
+      // Scroll action bar into view
+      actionBar.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    /* ========== COPY ========== */
+    function copyText(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('已复制到剪贴板 ✓');
+      }).catch(() => {
+        showToast('复制失败，请手动复制', 'error');
+      });
+    }
+
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = 'toast toast--visible' + (type === 'error' ? ' toast--error' : ' toast--success');
+      setTimeout(() => { toast.className = 'toast'; }, 2000);
+    }
+
+    /* ========== REPLAY FROM HISTORY ========== */
+    function replayAnalysis(text) {
+      const chat = document.getElementById('chat-messages');
+      const empty = document.getElementById('empty-state');
+      // Reset chat
+      chat.innerHTML = '';
+      if (empty) { chat.appendChild(empty); empty.style.display = 'none'; }
+      analyzeMessage(text);
+    }
+
+    /* ========== UTILS ========== */
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>
