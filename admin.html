@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mikey情感导师 - 导师管理后台</title>
+  <link rel="stylesheet" href="css/design-system.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: var(--bg-primary); color: var(--text-primary); font-family: var(--font-sans); min-height: 100vh; }
+
+    .admin-shell { display: flex; min-height: 100vh; }
+    .admin-sidebar {
+      width: 240px; background: var(--bg-elevated); border-right: 1px solid var(--border-primary);
+      padding: var(--space-6) 0; flex-shrink: 0; position: sticky; top: 0; height: 100vh;
+    }
+    .admin-sidebar__logo {
+      padding: 0 var(--space-5); margin-bottom: var(--space-8);
+      font-size: var(--text-xl); font-weight: var(--weight-bold); color: var(--brand-accent);
+    }
+    .admin-nav-item {
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: var(--space-3) var(--space-5); cursor: pointer;
+      color: var(--text-secondary); font-size: var(--text-base); border: none; background: none; width: 100%; text-align: left;
+      transition: all var(--duration-fast);
+    }
+    .admin-nav-item:hover { background: var(--bg-tertiary); color: var(--text-primary); }
+    .admin-nav-item--active { background: var(--bg-tertiary); color: var(--brand-accent); font-weight: var(--weight-semibold); border-right: 3px solid var(--brand-accent); }
+
+    .admin-main { flex: 1; padding: var(--space-8); max-width: 1200px; }
+    .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-6); }
+    .admin-title { font-size: var(--text-2xl); font-weight: var(--weight-bold); }
+
+    /* Coach cards grid */
+    .coach-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: var(--space-5); }
+    .coach-card {
+      background: var(--bg-elevated); border: 1px solid var(--border-secondary); border-radius: var(--radius-lg);
+      overflow: hidden; transition: all var(--duration-fast);
+    }
+    .coach-card:hover { border-color: var(--brand-accent); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .coach-card__header {
+      padding: var(--space-5); display: flex; align-items: center; gap: var(--space-4);
+      border-bottom: 1px solid var(--border-secondary);
+    }
+    .coach-card__avatar {
+      width: 56px; height: 56px; border-radius: 50%; background: var(--brand-primary);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; color: white; font-weight: var(--weight-bold); flex-shrink: 0;
+    }
+    .coach-card__info { flex: 1; }
+    .coach-card__name { font-size: var(--text-lg); font-weight: var(--weight-semibold); }
+    .coach-card__sub { font-size: var(--text-sm); color: var(--text-secondary); margin-top: 2px; }
+    .coach-card__status {
+      padding: 2px 10px; border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: var(--weight-semibold);
+    }
+    .coach-card__status--active { background: color-mix(in srgb, var(--brand-success) 15%, transparent); color: var(--brand-success); }
+    .coach-card__status--inactive { background: color-mix(in srgb, var(--text-tertiary) 15%, transparent); color: var(--text-tertiary); }
+
+    .coach-card__body { padding: var(--space-4) var(--space-5); }
+    .coach-card__bio { font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.6; margin-bottom: var(--space-3); }
+    .coach-card__tags { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-4); }
+    .coach-tag {
+      padding: 2px 10px; border-radius: var(--radius-full); font-size: var(--text-xs);
+      background: color-mix(in srgb, var(--brand-primary) 12%, transparent); color: var(--brand-primary-light);
+    }
+    .coach-card__stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-2); text-align: center; }
+    .coach-stat__num { font-size: var(--text-lg); font-weight: var(--weight-bold); color: var(--text-primary); }
+    .coach-stat__label { font-size: var(--text-xs); color: var(--text-tertiary); }
+
+    .coach-card__actions {
+      padding: var(--space-3) var(--space-5); border-top: 1px solid var(--border-secondary);
+      display: flex; gap: var(--space-2); justify-content: flex-end;
+    }
+
+    /* Buttons */
+    .btn-admin {
+      padding: var(--space-2) var(--space-4); border-radius: var(--radius-md);
+      font-size: var(--text-sm); cursor: pointer; border: 1px solid var(--border-secondary);
+      background: var(--bg-elevated); color: var(--text-primary); transition: all var(--duration-fast);
+    }
+    .btn-admin:hover { border-color: var(--brand-accent); }
+    .btn-admin--primary { background: var(--brand-accent); color: white; border-color: var(--brand-accent); }
+    .btn-admin--primary:hover { opacity: 0.9; }
+    .btn-admin--danger { color: var(--brand-danger); }
+    .btn-admin--danger:hover { background: color-mix(in srgb, var(--brand-danger) 10%, transparent); border-color: var(--brand-danger); }
+    .btn-admin--lg { padding: var(--space-3) var(--space-6); font-size: var(--text-base); }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000;
+      display: none; align-items: center; justify-content: center; padding: var(--space-5);
+    }
+    .modal-overlay--active { display: flex; }
+    .modal {
+      background: var(--bg-elevated); border-radius: var(--radius-lg); width: 100%; max-width: 640px;
+      max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .modal__header {
+      padding: var(--space-5) var(--space-6); border-bottom: 1px solid var(--border-secondary);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .modal__title { font-size: var(--text-xl); font-weight: var(--weight-bold); }
+    .modal__close { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-tertiary); padding: var(--space-2); }
+    .modal__close:hover { color: var(--text-primary); }
+    .modal__body { padding: var(--space-6); }
+    .modal__footer { padding: var(--space-4) var(--space-6); border-top: 1px solid var(--border-secondary); display: flex; justify-content: flex-end; gap: var(--space-3); }
+
+    /* Form */
+    .form-group { margin-bottom: var(--space-5); }
+    .form-label { display: block; font-size: var(--text-sm); font-weight: var(--weight-semibold); margin-bottom: var(--space-2); color: var(--text-secondary); }
+    .form-input, .form-textarea, .form-select {
+      width: 100%; padding: var(--space-3) var(--space-4); border: 1px solid var(--border-secondary);
+      border-radius: var(--radius-md); background: var(--bg-primary); color: var(--text-primary);
+      font-size: var(--text-base); font-family: var(--font-sans); transition: border-color var(--duration-fast);
+    }
+    .form-input:focus, .form-textarea:focus, .form-select:focus { outline: none; border-color: var(--brand-accent); }
+    .form-textarea { resize: vertical; min-height: 80px; }
+    .form-hint { font-size: var(--text-xs); color: var(--text-tertiary); margin-top: var(--space-1); }
+
+    /* Specialty checkboxes */
+    .specialty-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-2); }
+    .specialty-check {
+      display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-3);
+      border: 1px solid var(--border-secondary); border-radius: var(--radius-md); cursor: pointer;
+      font-size: var(--text-sm); transition: all var(--duration-fast);
+    }
+    .specialty-check:hover { border-color: var(--brand-accent); }
+    .specialty-check input { accent-color: var(--brand-accent); }
+    .specialty-check--checked { background: color-mix(in srgb, var(--brand-accent) 10%, transparent); border-color: var(--brand-accent); }
+
+    /* Materials section */
+    .materials-section { margin-top: var(--space-8); }
+    .materials-table { width: 100%; border-collapse: collapse; }
+    .materials-table th {
+      text-align: left; padding: var(--space-3) var(--space-4); font-size: var(--text-sm);
+      color: var(--text-tertiary); border-bottom: 1px solid var(--border-secondary); font-weight: var(--weight-semibold);
+    }
+    .materials-table td {
+      padding: var(--space-3) var(--space-4); font-size: var(--text-sm); border-bottom: 1px solid var(--border-secondary);
+    }
+    .materials-table tr:hover { background: var(--bg-tertiary); }
+
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: var(--space-2); }
+    .status-dot--published { background: var(--brand-success); }
+    .status-dot--review { background: var(--brand-accent); }
+    .status-dot--processing { background: var(--brand-warning, #f59e0b); }
+
+    /* Upload area */
+    .upload-zone {
+      border: 2px dashed var(--border-secondary); border-radius: var(--radius-lg);
+      padding: var(--space-8); text-align: center; cursor: pointer;
+      transition: all var(--duration-fast); margin-bottom: var(--space-5);
+    }
+    .upload-zone:hover { border-color: var(--brand-accent); background: color-mix(in srgb, var(--brand-accent) 5%, transparent); }
+    .upload-zone__icon { font-size: 40px; margin-bottom: var(--space-3); }
+    .upload-zone__text { color: var(--text-secondary); font-size: var(--text-sm); }
+    .upload-zone__formats { color: var(--text-tertiary); font-size: var(--text-xs); margin-top: var(--space-2); }
+
+    /* Page tabs */
+    .page-tabs { display: flex; gap: var(--space-1); margin-bottom: var(--space-6); border-bottom: 1px solid var(--border-secondary); }
+    .page-tab {
+      padding: var(--space-3) var(--space-5); border: none; background: none; cursor: pointer;
+      font-size: var(--text-sm); color: var(--text-secondary); border-bottom: 2px solid transparent;
+      transition: all var(--duration-fast); font-weight: var(--weight-medium);
+    }
+    .page-tab:hover { color: var(--text-primary); }
+    .page-tab--active { color: var(--brand-accent); border-bottom-color: var(--brand-accent); font-weight: var(--weight-semibold); }
+
+    /* Detail view */
+    .detail-back { display: flex; align-items: center; gap: var(--space-2); color: var(--text-secondary); cursor: pointer; font-size: var(--text-sm); margin-bottom: var(--space-5); background: none; border: none; }
+    .detail-back:hover { color: var(--brand-accent); }
+
+    /* Toast */
+    .admin-toast {
+      position: fixed; bottom: var(--space-6); right: var(--space-6); padding: var(--space-3) var(--space-5);
+      background: var(--brand-success); color: white; border-radius: var(--radius-md);
+      font-size: var(--text-sm); font-weight: var(--weight-semibold); z-index: 2000;
+      transform: translateY(100px); opacity: 0; transition: all 0.3s ease;
+    }
+    .admin-toast--visible { transform: translateY(0); opacity: 1; }
+
+    /* Empty state */
+    .empty-coaches {
+      text-align: center; padding: var(--space-12) var(--space-6);
+      color: var(--text-tertiary);
+    }
+    .empty-coaches__icon { font-size: 64px; margin-bottom: var(--space-4); }
+    .empty-coaches__title { font-size: var(--text-xl); color: var(--text-secondary); margin-bottom: var(--space-2); }
+
+    @media (max-width: 768px) {
+      .admin-sidebar { display: none; }
+      .admin-main { padding: var(--space-4); }
+      .coach-grid { grid-template-columns: 1fr; }
+      .specialty-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-shell">
+
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="admin-sidebar__logo">M 管理后台</div>
+      <nav>
+        <button class="admin-nav-item admin-nav-item--active" data-page="coaches" onclick="switchPage('coaches')">
+          <span>👥</span> 导师管理
+        </button>
+        <button class="admin-nav-item" data-page="materials" onclick="switchPage('materials')">
+          <span>📦</span> 资料库
+        </button>
+        <button class="admin-nav-item" data-page="upload" onclick="switchPage('upload')">
+          <span>📤</span> 上传资料
+        </button>
+        <button class="admin-nav-item" data-page="review" onclick="switchPage('review')">
+          <span>✅</span> 审核队列
+        </button>
+        <a class="admin-nav-item" href="index.html" style="margin-top: auto; text-decoration: none;">
+          <span>↩️</span> 返回前台
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="admin-main">
+
+      <!-- PAGE: Coach List -->
+      <div id="page-coaches" class="admin-page">
+        <div class="admin-header">
+          <h1 class="admin-title">导师管理</h1>
+          <button class="btn-admin btn-admin--primary btn-admin--lg" onclick="openCoachModal()">+ 新增导师</button>
+        </div>
+
+        <div class="coach-grid" id="coach-grid">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+      <!-- PAGE: Materials -->
+      <div id="page-materials" class="admin-page" style="display:none;">
+        <div class="admin-header">
+          <h1 class="admin-title">资料库</h1>
+          <button class="btn-admin btn-admin--primary" onclick="switchPage('upload')">+ 上传新资料</button>
+        </div>
+        <div class="page-tabs">
+          <button class="page-tab page-tab--active" onclick="filterMaterials('all', this)">全部</button>
+          <button class="page-tab" onclick="filterMaterials('published', this)">已发布</button>
+          <button class="page-tab" onclick="filterMaterials('review_pending', this)">待审核</button>
+          <button class="page-tab" onclick="filterMaterials('processing', this)">处理中</button>
+        </div>
+        <table class="materials-table" id="materials-table">
+          <thead>
+            <tr>
+              <th>标题</th>
+              <th>导师</th>
+              <th>类型</th>
+              <th>知识块数</th>
+              <th>状态</th>
+              <th>上传时间</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="materials-tbody"></tbody>
+        </table>
+      </div>
+
+      <!-- PAGE: Upload -->
+      <div id="page-upload" class="admin-page" style="display:none;">
+        <div class="admin-header">
+          <h1 class="admin-title">上传资料</h1>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">选择导师</label>
+          <select class="form-select" id="upload-coach">
+            <option value="">-- 请选择导师 --</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">资料类型</label>
+          <select class="form-select" id="upload-type">
+            <option value="video_transcript">视频文字稿</option>
+            <option value="article">文章/博客</option>
+            <option value="book_chapter">书籍章节</option>
+            <option value="audio_transcript">音频文字稿</option>
+            <option value="course_notes">课程笔记</option>
+            <option value="chat_example">聊天案例</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">资料标题</label>
+          <input type="text" class="form-input" id="upload-title" placeholder="例如：第三课 - 如何制造推拉">
+        </div>
+
+        <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
+          <div class="upload-zone__icon">📁</div>
+          <div class="upload-zone__text">点击上传文件 或 拖拽到此处</div>
+          <div class="upload-zone__formats">支持 .txt .md .pdf .srt .vtt .docx .html .mp3 .m4a .mp4</div>
+          <input type="file" id="file-input" style="display:none" accept=".txt,.md,.pdf,.srt,.vtt,.docx,.html,.mp3,.m4a,.wav,.mp4,.mov" onchange="handleFileSelect(this)">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">或直接粘贴文字内容</label>
+          <textarea class="form-textarea" id="upload-text" rows="8" placeholder="在这里粘贴导师的课程内容、文章、聊天案例等..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">备注 (可选)</label>
+          <input type="text" class="form-input" id="upload-notes" placeholder="来源链接、额外说明等">
+        </div>
+
+        <button class="btn-admin btn-admin--primary btn-admin--lg" onclick="submitUpload()" style="width: 100%;">
+          提交并开始AI处理
+        </button>
+      </div>
+
+      <!-- PAGE: Review Queue -->
+      <div id="page-review" class="admin-page" style="display:none;">
+        <div class="admin-header">
+          <h1 class="admin-title">审核队列</h1>
+        </div>
+        <div id="review-list">
+          <div class="empty-coaches">
+            <div class="empty-coaches__icon">✅</div>
+            <div class="empty-coaches__title">暂无待审核内容</div>
+            <p style="color: var(--text-tertiary);">上传资料后AI会自动处理并提交审核</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Coach Add/Edit Modal -->
+  <div class="modal-overlay" id="coach-modal">
+    <div class="modal">
+      <div class="modal__header">
+        <h2 class="modal__title" id="modal-title">新增导师</h2>
+        <button class="modal__close" onclick="closeCoachModal()">&times;</button>
+      </div>
+      <div class="modal__body">
+        <input type="hidden" id="coach-edit-id">
+
+        <div class="form-group">
+          <label class="form-label">导师名称 *</label>
+          <input type="text" class="form-input" id="coach-name" placeholder="例如：浪迹、Mystery、Mikey">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">显示名称 *</label>
+          <input type="text" class="form-input" id="coach-display-name" placeholder="例如：浪迹教育">
+          <div class="form-hint">用户界面上显示的名称</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">头像颜色</label>
+          <div style="display: flex; gap: var(--space-2);">
+            <input type="color" id="coach-color" value="#1B2A4A" style="width: 48px; height: 40px; border: none; cursor: pointer; border-radius: var(--radius-md);">
+            <input type="text" class="form-input" id="coach-initials" placeholder="头像缩写 如 LJ" maxlength="2" style="width: 100px;">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">导师简介</label>
+          <textarea class="form-textarea" id="coach-bio" placeholder="介绍这位导师的背景、教学风格、核心理念..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">擅长领域</label>
+          <div class="specialty-grid" id="specialty-grid">
+            <label class="specialty-check"><input type="checkbox" value="opening"> 破冰开场</label>
+            <label class="specialty-check"><input type="checkbox" value="daily_chat"> 日常聊天</label>
+            <label class="specialty-check"><input type="checkbox" value="flirting"> 暧昧升温</label>
+            <label class="specialty-check"><input type="checkbox" value="conflict"> 冲突处理</label>
+            <label class="specialty-check"><input type="checkbox" value="rejection"> 应对冷落</label>
+            <label class="specialty-check"><input type="checkbox" value="escalation"> 关系推进</label>
+            <label class="specialty-check"><input type="checkbox" value="texting_rules"> 聊天节奏</label>
+            <label class="specialty-check"><input type="checkbox" value="mindset"> 心态建设</label>
+            <label class="specialty-check"><input type="checkbox" value="attraction"> 吸引力</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">教学风格标签</label>
+          <input type="text" class="form-input" id="coach-style" placeholder="用逗号分隔 如：直接犀利,实战派,注重内核">
+          <div class="form-hint">描述这位导师的教学风格，用于AI参考</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">状态</label>
+          <select class="form-select" id="coach-active">
+            <option value="true">启用</option>
+            <option value="false">停用</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal__footer">
+        <button class="btn-admin" onclick="closeCoachModal()">取消</button>
+        <button class="btn-admin btn-admin--primary" onclick="saveCoach()">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="admin-toast" id="admin-toast"></div>
+
+  <script src="js/theme-manager.js"></script>
+  <script>
+    /* ==========================================
+       DATA STORE (localStorage)
+       ========================================== */
+    const STORAGE_KEY = 'mikey_coaches';
+    const MATERIALS_KEY = 'mikey_materials';
+
+    function loadCoaches() {
+      const data = localStorage.getItem(STORAGE_KEY);
+      if (data) return JSON.parse(data);
+      // Seed with Mikey as default
+      const defaultCoaches = [
+        {
+          id: generateId(),
+          name: 'Mikey',
+          displayName: 'Mikey情感导师',
+          color: '#D4883A',
+          initials: 'MK',
+          bio: '核心导师。风格直接不油腻，注重培养学员建立吸引力与情绪共鸣的能力，拒绝舔狗行为。',
+          specialties: ['opening', 'flirting', 'escalation', 'attraction', 'texting_rules'],
+          styleTags: ['直接犀利', '实战派', '反舔狗', '高情商'],
+          isActive: true,
+          sourceCount: 0,
+          chunkCount: 0,
+          createdAt: new Date().toISOString()
+        }
+      ];
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultCoaches));
+      return defaultCoaches;
+    }
+
+    function saveCoaches(coaches) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(coaches));
+    }
+
+    function loadMaterials() {
+      const data = localStorage.getItem(MATERIALS_KEY);
+      return data ? JSON.parse(data) : [];
+    }
+
+    function saveMaterials(materials) {
+      localStorage.setItem(MATERIALS_KEY, JSON.stringify(materials));
+    }
+
+    function generateId() {
+      return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    }
+
+    /* ==========================================
+       PAGE NAVIGATION
+       ========================================== */
+    function switchPage(page) {
+      document.querySelectorAll('.admin-page').forEach(p => p.style.display = 'none');
+      document.getElementById('page-' + page).style.display = 'block';
+      document.querySelectorAll('.admin-nav-item').forEach(n => n.classList.remove('admin-nav-item--active'));
+      document.querySelector(`.admin-nav-item[data-page="${page}"]`)?.classList.add('admin-nav-item--active');
+
+      if (page === 'coaches') renderCoaches();
+      if (page === 'materials') renderMaterials();
+      if (page === 'upload') populateCoachSelect();
+    }
+
+    /* ==========================================
+       RENDER COACHES
+       ========================================== */
+    const SPECIALTY_LABELS = {
+      opening: '破冰开场', daily_chat: '日常聊天', flirting: '暧昧升温',
+      conflict: '冲突处理', rejection: '应对冷落', escalation: '关系推进',
+      texting_rules: '聊天节奏', mindset: '心态建设', attraction: '吸引力'
+    };
+
+    function renderCoaches() {
+      const coaches = loadCoaches();
+      const grid = document.getElementById('coach-grid');
+
+      if (coaches.length === 0) {
+        grid.innerHTML = `
+          <div class="empty-coaches" style="grid-column: 1 / -1;">
+            <div class="empty-coaches__icon">👥</div>
+            <div class="empty-coaches__title">还没有导师</div>
+            <p style="color: var(--text-tertiary); margin-bottom: var(--space-4);">点击右上角「新增导师」添加第一位</p>
+          </div>`;
+        return;
+      }
+
+      grid.innerHTML = coaches.map(c => `
+        <div class="coach-card">
+          <div class="coach-card__header">
+            <div class="coach-card__avatar" style="background: ${c.color || '#1B2A4A'};">${c.initials || c.name.slice(0, 2).toUpperCase()}</div>
+            <div class="coach-card__info">
+              <div class="coach-card__name">${esc(c.displayName)}</div>
+              <div class="coach-card__sub">@${esc(c.name)}</div>
+            </div>
+            <span class="coach-card__status coach-card__status--${c.isActive ? 'active' : 'inactive'}">${c.isActive ? '启用中' : '已停用'}</span>
+          </div>
+          <div class="coach-card__body">
+            <div class="coach-card__bio">${esc(c.bio || '暂无简介')}</div>
+            <div class="coach-card__tags">
+              ${(c.specialties || []).map(s => `<span class="coach-tag">${SPECIALTY_LABELS[s] || s}</span>`).join('')}
+            </div>
+            <div class="coach-card__stats">
+              <div><div class="coach-stat__num">${c.sourceCount || 0}</div><div class="coach-stat__label">资料数</div></div>
+              <div><div class="coach-stat__num">${c.chunkCount || 0}</div><div class="coach-stat__label">知识块</div></div>
+              <div><div class="coach-stat__num">${(c.styleTags || []).length}</div><div class="coach-stat__label">风格标签</div></div>
+            </div>
+          </div>
+          <div class="coach-card__actions">
+            <button class="btn-admin" onclick="editCoach('${c.id}')">编辑</button>
+            <button class="btn-admin" onclick="switchPage('upload'); setTimeout(() => document.getElementById('upload-coach').value='${c.id}', 50);">上传资料</button>
+            <button class="btn-admin btn-admin--danger" onclick="deleteCoach('${c.id}')">删除</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    /* ==========================================
+       COACH MODAL (Add / Edit)
+       ========================================== */
+    function openCoachModal(coachId) {
+      const modal = document.getElementById('coach-modal');
+      modal.classList.add('modal-overlay--active');
+
+      if (coachId) {
+        const coach = loadCoaches().find(c => c.id === coachId);
+        if (!coach) return;
+        document.getElementById('modal-title').textContent = '编辑导师';
+        document.getElementById('coach-edit-id').value = coach.id;
+        document.getElementById('coach-name').value = coach.name;
+        document.getElementById('coach-display-name').value = coach.displayName;
+        document.getElementById('coach-color').value = coach.color || '#1B2A4A';
+        document.getElementById('coach-initials').value = coach.initials || '';
+        document.getElementById('coach-bio').value = coach.bio || '';
+        document.getElementById('coach-style').value = (coach.styleTags || []).join(', ');
+        document.getElementById('coach-active').value = coach.isActive ? 'true' : 'false';
+
+        // Check specialties
+        document.querySelectorAll('#specialty-grid input').forEach(cb => {
+          cb.checked = (coach.specialties || []).includes(cb.value);
+          cb.parentElement.classList.toggle('specialty-check--checked', cb.checked);
+        });
+      } else {
+        document.getElementById('modal-title').textContent = '新增导师';
+        document.getElementById('coach-edit-id').value = '';
+        document.getElementById('coach-name').value = '';
+        document.getElementById('coach-display-name').value = '';
+        document.getElementById('coach-color').value = '#1B2A4A';
+        document.getElementById('coach-initials').value = '';
+        document.getElementById('coach-bio').value = '';
+        document.getElementById('coach-style').value = '';
+        document.getElementById('coach-active').value = 'true';
+        document.querySelectorAll('#specialty-grid input').forEach(cb => {
+          cb.checked = false;
+          cb.parentElement.classList.remove('specialty-check--checked');
+        });
+      }
+    }
+
+    function closeCoachModal() {
+      document.getElementById('coach-modal').classList.remove('modal-overlay--active');
+    }
+
+    function editCoach(id) {
+      openCoachModal(id);
+    }
+
+    function saveCoach() {
+      const name = document.getElementById('coach-name').value.trim();
+      const displayName = document.getElementById('coach-display-name').value.trim();
+      if (!name || !displayName) {
+        toast('请填写导师名称和显示名称', 'error');
+        return;
+      }
+
+      const editId = document.getElementById('coach-edit-id').value;
+      const coaches = loadCoaches();
+
+      const specialties = [];
+      document.querySelectorAll('#specialty-grid input:checked').forEach(cb => specialties.push(cb.value));
+
+      const styleTags = document.getElementById('coach-style').value.split(/[,，]/).map(s => s.trim()).filter(Boolean);
+
+      const coachData = {
+        name,
+        displayName,
+        color: document.getElementById('coach-color').value,
+        initials: document.getElementById('coach-initials').value.trim() || name.slice(0, 2).toUpperCase(),
+        bio: document.getElementById('coach-bio').value.trim(),
+        specialties,
+        styleTags,
+        isActive: document.getElementById('coach-active').value === 'true',
+      };
+
+      if (editId) {
+        const idx = coaches.findIndex(c => c.id === editId);
+        if (idx >= 0) {
+          coaches[idx] = { ...coaches[idx], ...coachData, updatedAt: new Date().toISOString() };
+        }
+        toast('导师信息已更新');
+      } else {
+        coaches.push({
+          id: generateId(),
+          ...coachData,
+          sourceCount: 0,
+          chunkCount: 0,
+          createdAt: new Date().toISOString()
+        });
+        toast('新导师已添加');
+      }
+
+      saveCoaches(coaches);
+      closeCoachModal();
+      renderCoaches();
+    }
+
+    function deleteCoach(id) {
+      const coaches = loadCoaches();
+      const coach = coaches.find(c => c.id === id);
+      if (!coach) return;
+      if (!confirm(`确定要删除导师「${coach.displayName}」吗？\n\n该导师下的所有资料也会被删除。`)) return;
+
+      const newCoaches = coaches.filter(c => c.id !== id);
+      saveCoaches(newCoaches);
+
+      // Also remove related materials
+      const materials = loadMaterials().filter(m => m.coachId !== id);
+      saveMaterials(materials);
+
+      toast('导师已删除');
+      renderCoaches();
+    }
+
+    /* ==========================================
+       MATERIALS
+       ========================================== */
+    const TYPE_LABELS = {
+      video_transcript: '视频文字稿', article: '文章', book_chapter: '书籍章节',
+      audio_transcript: '音频文字稿', course_notes: '课程笔记', chat_example: '聊天案例'
+    };
+    const STATUS_LABELS = {
+      uploaded: '已上传', processing: '处理中', review_pending: '待审核',
+      published: '已发布', rejected: '已拒绝'
+    };
+    const STATUS_DOT = {
+      published: 'published', review_pending: 'review', processing: 'processing', uploaded: 'processing'
+    };
+
+    function renderMaterials(filter) {
+      let materials = loadMaterials();
+      const coaches = loadCoaches();
+      if (filter && filter !== 'all') materials = materials.filter(m => m.status === filter);
+
+      const tbody = document.getElementById('materials-tbody');
+      if (materials.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: var(--space-8); color: var(--text-tertiary);">暂无资料，去上传一些导师的教学内容吧</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = materials.map(m => {
+        const coach = coaches.find(c => c.id === m.coachId);
+        return `
+          <tr>
+            <td><strong>${esc(m.title || '未命名')}</strong></td>
+            <td>${esc(coach?.displayName || m.coachName || '-')}</td>
+            <td>${TYPE_LABELS[m.type] || m.type}</td>
+            <td>${m.chunkCount || 0}</td>
+            <td><span class="status-dot status-dot--${STATUS_DOT[m.status] || 'processing'}"></span>${STATUS_LABELS[m.status] || m.status}</td>
+            <td>${new Date(m.createdAt).toLocaleDateString('zh-CN')}</td>
+            <td>
+              <button class="btn-admin btn-admin--danger" onclick="deleteMaterial('${m.id}')">删除</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function filterMaterials(filter, btn) {
+      document.querySelectorAll('.page-tab').forEach(t => t.classList.remove('page-tab--active'));
+      if (btn) btn.classList.add('page-tab--active');
+      renderMaterials(filter);
+    }
+
+    function deleteMaterial(id) {
+      if (!confirm('确定删除这条资料？')) return;
+      const materials = loadMaterials().filter(m => m.id !== id);
+      saveMaterials(materials);
+      renderMaterials();
+      toast('资料已删除');
+    }
+
+    /* ==========================================
+       UPLOAD
+       ========================================== */
+    function populateCoachSelect() {
+      const select = document.getElementById('upload-coach');
+      const coaches = loadCoaches();
+      select.innerHTML = '<option value="">-- 请选择导师 --</option>' +
+        coaches.map(c => `<option value="${c.id}">${esc(c.displayName)} (@${esc(c.name)})</option>`).join('');
+    }
+
+    let selectedFile = null;
+    function handleFileSelect(input) {
+      if (input.files.length > 0) {
+        selectedFile = input.files[0];
+        document.querySelector('.upload-zone__text').textContent = `已选择: ${selectedFile.name} (${formatSize(selectedFile.size)})`;
+      }
+    }
+
+    function submitUpload() {
+      const coachId = document.getElementById('upload-coach').value;
+      const type = document.getElementById('upload-type').value;
+      const title = document.getElementById('upload-title').value.trim();
+      const text = document.getElementById('upload-text').value.trim();
+      const notes = document.getElementById('upload-notes').value.trim();
+
+      if (!coachId) { toast('请选择导师', 'error'); return; }
+      if (!title) { toast('请填写资料标题', 'error'); return; }
+      if (!selectedFile && !text) { toast('请上传文件或粘贴内容', 'error'); return; }
+
+      const coaches = loadCoaches();
+      const coach = coaches.find(c => c.id === coachId);
+
+      const materials = loadMaterials();
+      materials.push({
+        id: generateId(),
+        coachId,
+        coachName: coach?.name || '',
+        type,
+        title,
+        fileName: selectedFile?.name || null,
+        fileSize: selectedFile?.size || null,
+        textContent: text || null,
+        notes,
+        status: text ? 'review_pending' : 'uploaded',
+        chunkCount: 0,
+        createdAt: new Date().toISOString()
+      });
+      saveMaterials(materials);
+
+      // Update coach source count
+      if (coach) {
+        coach.sourceCount = materials.filter(m => m.coachId === coachId).length;
+        saveCoaches(coaches);
+      }
+
+      // Reset form
+      document.getElementById('upload-title').value = '';
+      document.getElementById('upload-text').value = '';
+      document.getElementById('upload-notes').value = '';
+      document.getElementById('file-input').value = '';
+      selectedFile = null;
+      document.querySelector('.upload-zone__text').textContent = '点击上传文件 或 拖拽到此处';
+
+      toast('资料已提交');
+      switchPage('materials');
+    }
+
+    /* ==========================================
+       UTILITY
+       ========================================== */
+    function esc(str) {
+      const div = document.createElement('div');
+      div.textContent = str || '';
+      return div.innerHTML;
+    }
+
+    function formatSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    function toast(msg, type) {
+      const t = document.getElementById('admin-toast');
+      t.textContent = msg;
+      t.style.background = type === 'error' ? 'var(--brand-danger)' : 'var(--brand-success)';
+      t.classList.add('admin-toast--visible');
+      setTimeout(() => t.classList.remove('admin-toast--visible'), 2500);
+    }
+
+    // Specialty checkbox toggle visual
+    document.querySelectorAll('#specialty-grid input').forEach(cb => {
+      cb.addEventListener('change', () => cb.parentElement.classList.toggle('specialty-check--checked', cb.checked));
+    });
+
+    // Drag & drop
+    const uploadZone = document.getElementById('upload-zone');
+    if (uploadZone) {
+      uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.style.borderColor = 'var(--brand-accent)'; });
+      uploadZone.addEventListener('dragleave', () => { uploadZone.style.borderColor = ''; });
+      uploadZone.addEventListener('drop', e => {
+        e.preventDefault();
+        uploadZone.style.borderColor = '';
+        if (e.dataTransfer.files.length > 0) {
+          selectedFile = e.dataTransfer.files[0];
+          document.querySelector('.upload-zone__text').textContent = `已选择: ${selectedFile.name} (${formatSize(selectedFile.size)})`;
+        }
+      });
+    }
+
+    // Close modal on overlay click
+    document.getElementById('coach-modal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('coach-modal')) closeCoachModal();
+    });
+
+    // Init
+    renderCoaches();
+  </script>
+</body>
+</html>
