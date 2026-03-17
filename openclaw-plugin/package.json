@@ -1,0 +1,24 @@
+{
+  "name": "openclaw-plugin-mikey",
+  "version": "0.1.0",
+  "description": "Mikey情感导师 - OpenClaw约会教练插件",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "dev": "tsup src/index.ts --format esm,cjs --dts --watch",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "keywords": ["openclaw", "plugin", "dating-coach", "telegram"],
+  "license": "MIT",
+  "devDependencies": {
+    "@openclaw/sdk": "^0.1.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.4.0",
+    "vitest": "^2.0.0"
+  },
+  "peerDependencies": {
+    "@openclaw/sdk": ">=0.1.0"
+  }
+}

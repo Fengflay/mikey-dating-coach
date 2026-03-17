@@ -1,0 +1,15 @@
+{
+  "name": "openclaw-plugin-mikey",
+  "version": "0.1.0",
+  "description": "Mikey情感导师 - AI约会教练Telegram插件",
+  "author": "solo-dev",
+  "entry": "dist/index.js",
+  "skills": ["skills/SKILL.md"],
+  "knowledge": ["knowledge/*.md"],
+  "channels": [],
+  "permissions": ["tools", "memory", "context"],
+  "config": {
+    "language": "zh-CN",
+    "maxResponseOptions": 3
+  }
+}
