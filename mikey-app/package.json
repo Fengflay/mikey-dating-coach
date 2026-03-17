@@ -1,0 +1,40 @@
+{
+  "name": "mikey-dating-coach",
+  "version": "1.0.0",
+  "description": "Mikey Dating Coach - Telegram bot + local web admin",
+  "main": "src/main.js",
+  "bin": "src/main.js",
+  "pkg": {
+    "scripts": "src/**/*.js",
+    "assets": [
+      "web/**/*",
+      "knowledge-base/**/*",
+      "prompts/**/*"
+    ],
+    "targets": [
+      "node18-macos-arm64",
+      "node18-macos-x64",
+      "node18-win-x64"
+    ],
+    "outputPath": "dist"
+  },
+  "scripts": {
+    "start": "node src/main.js",
+    "dev": "node --watch src/main.js",
+    "build:mac-arm": "pkg . --target node18-macos-arm64 --output dist/MikeyCoach-mac-arm64",
+    "build:mac-x64": "pkg . --target node18-macos-x64 --output dist/MikeyCoach-mac-x64",
+    "build:win": "pkg . --target node18-win-x64 --output dist/MikeyCoach-win.exe",
+    "build:all": "pkg . --output dist/MikeyCoach",
+    "dmg": "npm run build:mac-arm && node scripts/make-dmg.js"
+  },
+  "dependencies": {
+    "grammy": "^1.21.1",
+    "express": "^4.18.2",
+    "@anthropic-ai/sdk": "^0.24.0",
+    "open": "^9.1.0",
+    "conf": "^12.0.0"
+  },
+  "devDependencies": {
+    "pkg": "^5.8.1"
+  }
+}

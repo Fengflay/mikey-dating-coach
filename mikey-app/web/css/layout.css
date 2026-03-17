@@ -1,0 +1,376 @@
+/* ============================================================
+   MIKEY情感导师 - Layout System
+   Mobile-first responsive framework
+   Chat app + coaching dashboard hybrid layout
+   ============================================================ */
+
+/* ---- RESPONSIVE BREAKPOINTS ----
+   Mobile-first: styles cascade upward
+
+   Mobile:   0 - 479px    (default, no media query)
+   Phablet:  480 - 767px  (large phones, landscape)
+   Tablet:   768 - 1023px (tablets, small laptops)
+   Desktop:  1024 - 1279px (laptops)
+   Large:    1280px+       (desktop monitors)
+*/
+
+/* ============================================================
+   APP SHELL - The outer structure
+   Mobile: Stack (header + content + tab bar)
+   Desktop: Sidebar + main panel
+   ============================================================ */
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;               /* Dynamic viewport height for mobile */
+  width: 100%;
+  overflow: hidden;
+  background: var(--bg-primary);
+}
+
+/* Mobile header */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--header-height);
+  padding: 0 var(--space-4);
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-secondary);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.app-header__title {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+}
+
+.app-header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Main content area */
+.app-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Mobile bottom tab bar */
+.app-tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-sticky);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  height: var(--tab-bar-height);
+  padding-bottom: env(safe-area-inset-bottom);
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-secondary);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.tab-bar__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: var(--space-1) var(--space-3);
+  color: var(--text-tertiary);
+  text-decoration: none;
+  font-size: var(--text-xs);
+  transition: color var(--duration-fast);
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+.tab-bar__item--active {
+  color: var(--brand-accent);
+}
+
+.tab-bar__item-icon {
+  width: 24px;
+  height: 24px;
+}
+
+/* Account for tab bar when scrolling content */
+.app-content--with-tab-bar {
+  padding-bottom: calc(var(--tab-bar-height) + env(safe-area-inset-bottom));
+}
+
+/* ============================================================
+   DESKTOP LAYOUT - Sidebar + main panel
+   ============================================================ */
+@media (min-width: 768px) {
+  .app-shell {
+    flex-direction: row;
+  }
+
+  .app-header {
+    display: none;  /* Use sidebar navigation on desktop */
+  }
+
+  .app-tab-bar {
+    display: none;  /* Use sidebar navigation on desktop */
+  }
+
+  .app-content--with-tab-bar {
+    padding-bottom: 0;
+  }
+}
+
+/* Desktop sidebar */
+.app-sidebar {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .app-sidebar {
+    display: flex;
+    flex-direction: column;
+    width: var(--sidebar-width);
+    min-width: var(--sidebar-width);
+    height: 100dvh;
+    background: var(--bg-secondary);
+    border-right: 1px solid var(--border-secondary);
+    overflow-y: auto;
+  }
+
+  .sidebar__logo {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-6) var(--space-5);
+  }
+
+  .sidebar__logo-text {
+    font-size: var(--text-xl);
+    font-weight: var(--weight-bold);
+    color: var(--brand-primary);
+  }
+
+  .sidebar__nav {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-2) var(--space-3);
+    gap: var(--space-1);
+  }
+
+  .sidebar__nav-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: var(--text-base);
+    font-weight: var(--weight-medium);
+    transition: all var(--duration-fast);
+    cursor: pointer;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+  }
+
+  .sidebar__nav-item:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+  }
+
+  .sidebar__nav-item--active {
+    background: var(--brand-primary);
+    color: var(--text-inverse);
+  }
+
+  .sidebar__nav-item--active:hover {
+    background: var(--brand-primary-light);
+    color: var(--text-inverse);
+  }
+
+  .sidebar__footer {
+    padding: var(--space-4) var(--space-5);
+    border-top: 1px solid var(--border-secondary);
+  }
+}
+
+/* ============================================================
+   CHAT LAYOUT - The primary interaction model
+   ============================================================ */
+.chat-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-width: var(--container-chat);
+  margin: 0 auto;
+  width: 100%;
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.chat-input-area {
+  position: sticky;
+  bottom: 0;
+  padding: var(--space-3) var(--space-4);
+  padding-bottom: calc(var(--space-3) + env(safe-area-inset-bottom));
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-secondary);
+}
+
+@media (min-width: 768px) {
+  .chat-input-area {
+    padding-bottom: var(--space-3);
+  }
+}
+
+/* ============================================================
+   CONTAINER UTILITIES
+   ============================================================ */
+.container {
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 var(--space-4);
+}
+
+.container--sm { max-width: var(--container-sm); }
+.container--md { max-width: var(--container-md); }
+.container--lg { max-width: var(--container-lg); }
+.container--xl { max-width: var(--container-xl); }
+.container--chat { max-width: var(--container-chat); }
+
+/* ============================================================
+   GRID SYSTEM
+   ============================================================ */
+
+/* Auto-fit card grid */
+.grid-cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+
+@media (min-width: 480px) {
+  .grid-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-cards {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Two-column layout (articles, settings) */
+.grid-2col {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-6);
+}
+
+@media (min-width: 768px) {
+  .grid-2col {
+    grid-template-columns: 2fr 1fr;
+    gap: var(--space-8);
+  }
+}
+
+/* Response options - horizontal on larger screens */
+.grid-responses {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+@media (min-width: 768px) {
+  .grid-responses {
+    flex-direction: row;
+    gap: var(--space-4);
+  }
+
+  .grid-responses > * {
+    flex: 1;
+  }
+}
+
+/* ============================================================
+   FLEX UTILITIES
+   ============================================================ */
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.flex-wrap { flex-wrap: wrap; }
+.flex-1 { flex: 1; }
+.items-center { align-items: center; }
+.items-start { align-items: flex-start; }
+.justify-center { justify-content: center; }
+.justify-between { justify-content: space-between; }
+.gap-1 { gap: var(--space-1); }
+.gap-2 { gap: var(--space-2); }
+.gap-3 { gap: var(--space-3); }
+.gap-4 { gap: var(--space-4); }
+.gap-6 { gap: var(--space-6); }
+
+/* ============================================================
+   SAFE AREA HANDLING (iOS notch, etc.)
+   ============================================================ */
+@supports (padding-top: env(safe-area-inset-top)) {
+  .app-header {
+    padding-top: env(safe-area-inset-top);
+    height: calc(var(--header-height) + env(safe-area-inset-top));
+  }
+}
+
+/* ============================================================
+   SCROLL BEHAVIOR
+   ============================================================ */
+.scroll-y {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-primary) transparent;
+}
+
+.scroll-y::-webkit-scrollbar {
+  width: 4px;
+}
+
+.scroll-y::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scroll-y::-webkit-scrollbar-thumb {
+  background: var(--border-primary);
+  border-radius: var(--radius-full);
+}
+
+/* Hide scrollbar on mobile for cleaner look */
+@media (max-width: 767px) {
+  .scroll-y::-webkit-scrollbar {
+    display: none;
+  }
+  .scroll-y {
+    scrollbar-width: none;
+  }
+}

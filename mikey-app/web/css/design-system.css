@@ -1,0 +1,323 @@
+/* ============================================================
+   MIKEY情感导师 - Design System
+   Modern, masculine-but-approachable, trustworthy
+   Target: Dating coach AI - chat + coaching dashboard hybrid
+   ============================================================ */
+
+:root {
+  /* ---- BRAND IDENTITY ----
+     Tone: Confident navy + warm copper/amber accents
+     Psychology: Navy = trust/authority, Copper = warmth/approachability
+     Avoids: Aggressive reds, overly feminine pinks, cold grays */
+
+  /* Primary: Deep Navy - Authority, trust, intelligence */
+  --brand-primary: #1B2A4A;
+  --brand-primary-light: #2D4170;
+  --brand-primary-dark: #0F1B33;
+
+  /* Accent: Warm Copper/Amber - Approachable, warm, conversational */
+  --brand-accent: #D4883A;
+  --brand-accent-light: #E8A75C;
+  --brand-accent-dark: #B86E25;
+
+  /* Success: Sage Green - Positive outcomes, growth */
+  --brand-success: #4CAF7D;
+  --brand-success-light: #6BC496;
+  --brand-success-dark: #3A8F63;
+
+  /* Warning: Soft Amber - Caution zones (排雷区) */
+  --brand-warning: #E8A74E;
+  --brand-warning-light: #F0C078;
+  --brand-warning-dark: #C88A2E;
+
+  /* Danger: Muted Coral - Mistakes to avoid, not aggressive red */
+  --brand-danger: #D4645C;
+  --brand-danger-light: #E08880;
+  --brand-danger-dark: #B84A42;
+
+  /* ---- LIGHT THEME (Default) ---- */
+  --bg-primary: #F8F7F4;         /* Warm off-white, not clinical */
+  --bg-secondary: #FFFFFF;
+  --bg-tertiary: #F0EDE8;        /* Warm gray for cards */
+  --bg-elevated: #FFFFFF;
+  --bg-chat-user: #E8E4DD;       /* User message bubble */
+  --bg-chat-ai: #FFFFFF;         /* AI response bubble */
+  --bg-input: #FFFFFF;
+  --bg-overlay: rgba(27, 42, 74, 0.6);
+
+  --text-primary: #1A1A1A;
+  --text-secondary: #5A5A5A;
+  --text-tertiary: #8A8A8A;
+  --text-inverse: #FFFFFF;
+  --text-on-accent: #FFFFFF;
+  --text-link: #2D4170;
+
+  --border-primary: #E0DCD5;
+  --border-secondary: #EDEAE4;
+  --border-focus: var(--brand-accent);
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.10);
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+  /* ---- DARK THEME ---- */
+  /* Applied via [data-theme="dark"] */
+
+  /* ---- TYPOGRAPHY ----
+     Chinese-optimized: system fonts first for CJK rendering
+     Scale: 1.25 ratio (Major Third) */
+  --font-primary: -apple-system, "PingFang SC", "Microsoft YaHei",
+                  "Hiragino Sans GB", "Noto Sans SC", "Source Han Sans SC",
+                  sans-serif;
+  --font-mono: "SF Mono", "Fira Code", "Source Code Pro", monospace;
+
+  /* Type Scale */
+  --text-xs: 0.75rem;      /* 12px - labels, timestamps */
+  --text-sm: 0.875rem;     /* 14px - secondary text, metadata */
+  --text-base: 1rem;       /* 16px - body text, messages */
+  --text-lg: 1.125rem;     /* 18px - emphasized body */
+  --text-xl: 1.25rem;      /* 20px - section headers */
+  --text-2xl: 1.5rem;      /* 24px - screen titles */
+  --text-3xl: 1.875rem;    /* 30px - hero text */
+  --text-4xl: 2.25rem;     /* 36px - onboarding headlines */
+
+  /* Line Heights */
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;  /* For Chinese body text readability */
+
+  /* Font Weights */
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* Letter Spacing - tighter for Chinese */
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.05em;
+
+  /* ---- SPACING SYSTEM ----
+     4px base grid, 8px comfortable rhythm */
+  --space-0: 0;
+  --space-1: 0.25rem;     /* 4px */
+  --space-2: 0.5rem;      /* 8px */
+  --space-3: 0.75rem;     /* 12px */
+  --space-4: 1rem;        /* 16px */
+  --space-5: 1.25rem;     /* 20px */
+  --space-6: 1.5rem;      /* 24px */
+  --space-8: 2rem;        /* 32px */
+  --space-10: 2.5rem;     /* 40px */
+  --space-12: 3rem;       /* 48px */
+  --space-16: 4rem;       /* 64px */
+  --space-20: 5rem;       /* 80px */
+  --space-24: 6rem;       /* 96px */
+
+  /* ---- LAYOUT ---- */
+  --container-chat: 680px;     /* Chat column max width */
+  --container-sm: 480px;       /* Narrow content */
+  --container-md: 768px;       /* Medium content */
+  --container-lg: 1024px;      /* Wide content */
+  --container-xl: 1280px;      /* Full desktop */
+
+  --sidebar-width: 280px;      /* Desktop sidebar */
+  --header-height: 56px;       /* Mobile header */
+  --header-height-desktop: 64px;
+  --tab-bar-height: 56px;      /* Mobile bottom tab bar */
+  --input-area-height: 80px;   /* Chat input area min */
+
+  /* ---- BORDER RADIUS ---- */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+
+  /* Message bubbles - asymmetric for chat feel */
+  --radius-bubble-user: 16px 16px 4px 16px;
+  --radius-bubble-ai: 16px 16px 16px 4px;
+
+  /* ---- TRANSITIONS ---- */
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 400ms;
+  --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth: cubic-bezier(0.25, 0.1, 0.25, 1);
+
+  /* ---- Z-INDEX SCALE ---- */
+  --z-base: 0;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-overlay: 300;
+  --z-modal: 400;
+  --z-toast: 500;
+
+  /* ---- RESPONSE OPTION COLORS ----
+     A: Humor (幽默) - Warm, playful
+     B: Empathy (共情) - Calm, understanding
+     C: Guidance (引导) - Confident, directive */
+  --option-a-bg: #FFF8F0;
+  --option-a-border: #E8A75C;
+  --option-a-text: #8B5E2F;
+  --option-b-bg: #F0F7F4;
+  --option-b-border: #6BC496;
+  --option-b-text: #2D6B4A;
+  --option-c-bg: #F0F3F8;
+  --option-c-border: #5B7BB5;
+  --option-c-text: #2D4170;
+}
+
+/* ============================================================
+   DARK THEME
+   ============================================================ */
+[data-theme="dark"] {
+  --bg-primary: #0D1117;
+  --bg-secondary: #161B22;
+  --bg-tertiary: #1C2333;
+  --bg-elevated: #1C2333;
+  --bg-chat-user: #1B2A4A;
+  --bg-chat-ai: #1C2333;
+  --bg-input: #161B22;
+  --bg-overlay: rgba(0, 0, 0, 0.7);
+
+  --text-primary: #E6E1D8;
+  --text-secondary: #9B9485;
+  --text-tertiary: #6B6560;
+  --text-inverse: #1A1A1A;
+  --text-link: #E8A75C;
+
+  --border-primary: #2D3545;
+  --border-secondary: #1F2937;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.3);
+
+  --option-a-bg: #2A2015;
+  --option-a-border: #8B6530;
+  --option-a-text: #E8A75C;
+  --option-b-bg: #152A1F;
+  --option-b-border: #3A7A55;
+  --option-b-text: #6BC496;
+  --option-c-bg: #151D30;
+  --option-c-border: #3A5590;
+  --option-c-text: #7B9FD4;
+}
+
+/* System preference auto-detection */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg-primary: #0D1117;
+    --bg-secondary: #161B22;
+    --bg-tertiary: #1C2333;
+    --bg-elevated: #1C2333;
+    --bg-chat-user: #1B2A4A;
+    --bg-chat-ai: #1C2333;
+    --bg-input: #161B22;
+    --bg-overlay: rgba(0, 0, 0, 0.7);
+
+    --text-primary: #E6E1D8;
+    --text-secondary: #9B9485;
+    --text-tertiary: #6B6560;
+    --text-inverse: #1A1A1A;
+    --text-link: #E8A75C;
+
+    --border-primary: #2D3545;
+    --border-secondary: #1F2937;
+
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+    --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.3);
+
+    --option-a-bg: #2A2015;
+    --option-a-border: #8B6530;
+    --option-a-text: #E8A75C;
+    --option-b-bg: #152A1F;
+    --option-b-border: #3A7A55;
+    --option-b-text: #6BC496;
+    --option-c-bg: #151D30;
+    --option-c-border: #3A5590;
+    --option-c-text: #7B9FD4;
+  }
+}
+
+/* ============================================================
+   BASE RESET & TYPOGRAPHY
+   ============================================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-primary);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+  transition: background-color var(--duration-normal) var(--ease-default),
+              color var(--duration-normal) var(--ease-default);
+  overscroll-behavior: none;     /* Prevent pull-to-refresh on mobile */
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ============================================================
+   TYPOGRAPHY CLASSES
+   ============================================================ */
+.text-headline {
+  font-size: var(--text-3xl);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+}
+
+.text-title {
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+}
+
+.text-section {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+}
+
+.text-body {
+  font-size: var(--text-base);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-relaxed);
+}
+
+.text-body-emphasis {
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-normal);
+}
+
+.text-caption {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-normal);
+  color: var(--text-secondary);
+}
+
+.text-label {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+}

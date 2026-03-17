@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Mikey Dating Coach</title>
+  <link rel="stylesheet" href="css/design-system.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <style>
+    .screen { display: none; }
+    .screen--active { display: flex; flex-direction: column; height: 100%; }
+    .fade-in { animation: fadeIn 0.3s ease forwards; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .stagger-1 { animation-delay: 0.1s; opacity: 0; }
+    .stagger-2 { animation-delay: 0.2s; opacity: 0; }
+    .stagger-3 { animation-delay: 0.3s; opacity: 0; }
+    .sample-chips { display: flex; flex-direction: column; gap: var(--space-2); max-width: 280px; }
+    .sample-chip {
+      padding: var(--space-3) var(--space-4);
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-secondary);
+      border-radius: var(--radius-md);
+      font-size: var(--text-base);
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all var(--duration-fast);
+      text-align: left;
+    }
+    .sample-chip:hover { border-color: var(--brand-accent); background: var(--bg-tertiary); }
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-4);
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-secondary);
+      font-size: var(--text-xs);
+      color: var(--text-tertiary);
+    }
+    .status-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      display: inline-block;
+    }
+    .status-dot--green { background: #4CAF7D; }
+    .status-dot--red { background: #D4645C; }
+    .status-dot--yellow { background: #E8A74E; }
+    /* Settings form in settings tab */
+    .settings-form .form-group { margin-bottom: 20px; }
+    .settings-form .form-label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; color: var(--text-secondary); }
+    .settings-form .form-input {
+      width: 100%; padding: 10px 14px;
+      border: 1px solid var(--border-secondary); border-radius: 10px;
+      background: var(--bg-primary); color: var(--text-primary);
+      font-size: 15px; font-family: inherit;
+    }
+    .settings-form .form-input:focus { outline: none; border-color: var(--brand-accent); }
+    .settings-form .btn-save {
+      padding: 10px 24px; border: none; border-radius: 9999px;
+      background: var(--brand-accent); color: white; font-size: 15px;
+      font-weight: 600; cursor: pointer;
+    }
+    .settings-form .btn-save:hover { opacity: 0.9; }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="app-header__title">Mikey Dating Coach</div>
+      <div class="app-header__actions">
+        <div class="theme-toggle" role="radiogroup">
+          <button class="theme-toggle__option" data-theme="light">Light</button>
+          <button class="theme-toggle__option" data-theme="dark">Dark</button>
+          <button class="theme-toggle__option theme-toggle__option--active" data-theme="system">Auto</button>
+        </div>
+      </div>
+    </header>
+
+    <aside class="app-sidebar">
+      <div class="sidebar__logo">
+        <span style="font-size: 28px;">M</span>
+        <span class="sidebar__logo-text">Mikey Dating Coach</span>
+      </div>
+      <nav class="sidebar__nav">
+        <button class="sidebar__nav-item sidebar__nav-item--active" data-tab="analysis" onclick="switchTab('analysis')">
+          <span>Chat</span> Analysis
+        </button>
+        <button class="sidebar__nav-item" data-tab="settings" onclick="switchTab('settings')">
+          <span>Gear</span> Settings
+        </button>
+      </nav>
+      <div class="sidebar__footer">
+        <div class="theme-toggle" role="radiogroup">
+          <button class="theme-toggle__option" data-theme="light">Light</button>
+          <button class="theme-toggle__option" data-theme="dark">Dark</button>
+          <button class="theme-toggle__option theme-toggle__option--active" data-theme="system">Auto</button>
+        </div>
+        <div style="margin-top: var(--space-3);">
+          <a href="/admin" class="btn btn--primary btn--full btn--sm" style="text-decoration:none; text-align:center; display:block;">Admin Panel</a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Status bar -->
+    <div class="status-bar" id="status-bar">
+      <span class="status-dot status-dot--yellow" id="bot-dot"></span>
+      <span id="bot-status-text">Checking...</span>
+    </div>
+
+    <main class="app-content app-content--with-tab-bar">
+      <!-- Analysis Screen -->
+      <section id="screen-analysis" class="screen screen--active">
+        <div class="chat-layout">
+          <div class="chat-messages scroll-y" id="chat-messages">
+            <div class="empty-state" id="empty-state">
+              <div class="empty-state__icon" style="font-size: 48px;">Chat</div>
+              <h2 class="empty-state__title">Paste her message</h2>
+              <p class="empty-state__desc">Mikey will analyze it and give you 3 response options</p>
+              <div style="margin-top: var(--space-6);">
+                <p class="text-caption" style="margin-bottom: var(--space-3);">Try these:</p>
+                <div class="sample-chips">
+                  <button class="sample-chip" onclick="analyzeMessage('haha okay')">"haha okay"</button>
+                  <button class="sample-chip" onclick="analyzeMessage('what are you up to')">"what are you up to"</button>
+                  <button class="sample-chip" onclick="analyzeMessage('I am so tired today')">"I am so tired today"</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="chat-input-area">
+            <div class="input-composer">
+              <textarea class="input-composer__textarea" id="message-input" placeholder="Paste her message..." rows="1" oninput="autoResize(this)"></textarea>
+              <button class="input-composer__btn input-composer__btn--send" id="send-btn" onclick="sendMessage()" disabled>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Settings Screen -->
+      <section id="screen-settings" class="screen">
+        <div class="container container--chat" style="padding-top: var(--space-6); padding-bottom: var(--space-20);">
+          <h1 class="text-title" style="margin-bottom: var(--space-6);">Settings</h1>
+
+          <div class="settings-form">
+            <div class="form-group">
+              <label class="form-label">Telegram Bot Token</label>
+              <input type="text" class="form-input" id="settings-telegram" placeholder="Loading...">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Claude API Key</label>
+              <input type="password" class="form-input" id="settings-claude" placeholder="Loading...">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Claude Model</label>
+              <input type="text" class="form-input" id="settings-model" placeholder="claude-sonnet-4-20250514">
+            </div>
+            <button class="btn-save" onclick="saveSettings()">Save Settings</button>
+            <span id="settings-status" style="margin-left: 12px; font-size: 14px;"></span>
+          </div>
+
+          <div style="margin-top: var(--space-8);">
+            <a href="/admin" class="btn btn--primary btn--lg btn--full" style="text-decoration:none; text-align:center; display:block;">
+              Open Admin Panel (Manage Coaches + Knowledge Base)
+            </a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <nav class="app-tab-bar">
+      <button class="tab-bar__item tab-bar__item--active" data-tab="analysis" onclick="switchTab('analysis')">
+        <span style="font-size: 20px;">Chat</span>
+        <span>Analysis</span>
+      </button>
+      <button class="tab-bar__item" data-tab="settings" onclick="switchTab('settings')">
+        <span style="font-size: 20px;">Gear</span>
+        <span>Settings</span>
+      </button>
+    </nav>
+
+    <div class="toast" id="toast">Copied!</div>
+  </div>
+
+  <script src="js/theme-manager.js"></script>
+  <script>
+    /* === Tab Navigation === */
+    function switchTab(tabName) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('screen--active'));
+      document.getElementById('screen-' + tabName)?.classList.add('screen--active');
+      document.querySelectorAll('.tab-bar__item').forEach(t => t.classList.toggle('tab-bar__item--active', t.dataset.tab === tabName));
+      document.querySelectorAll('.sidebar__nav-item').forEach(t => t.classList.toggle('sidebar__nav-item--active', t.dataset.tab === tabName));
+      if (tabName === 'settings') loadSettings();
+    }
+
+    /* === Status Check === */
+    async function checkStatus() {
+      try {
+        const resp = await fetch('/api/status');
+        const data = await resp.json();
+        const dot = document.getElementById('bot-dot');
+        const text = document.getElementById('bot-status-text');
+        if (data.botStatus === 'running') {
+          dot.className = 'status-dot status-dot--green';
+          text.textContent = 'Telegram bot running';
+        } else if (data.botStatus === 'error') {
+          dot.className = 'status-dot status-dot--red';
+          text.textContent = 'Bot error - check settings';
+        } else {
+          dot.className = 'status-dot status-dot--yellow';
+          text.textContent = 'Bot not running';
+        }
+      } catch {
+        document.getElementById('bot-status-text').textContent = 'Cannot connect to server';
+      }
+    }
+    checkStatus();
+    setInterval(checkStatus, 10000);
+
+    /* === Input === */
+    const messageInput = document.getElementById('message-input');
+    const sendBtn = document.getElementById('send-btn');
+    messageInput.addEventListener('input', () => { sendBtn.disabled = !messageInput.value.trim(); });
+    messageInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (messageInput.value.trim()) sendMessage(); }
+    });
+    function autoResize(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 120) + 'px'; }
+    function sendMessage() {
+      const text = messageInput.value.trim();
+      if (!text) return;
+      messageInput.value = '';
+      messageInput.style.height = 'auto';
+      sendBtn.disabled = true;
+      analyzeMessage(text);
+    }
+
+    /* === Core: Analyze via API === */
+    async function analyzeMessage(text) {
+      const chat = document.getElementById('chat-messages');
+      const empty = document.getElementById('empty-state');
+      if (empty) empty.style.display = 'none';
+
+      // User bubble
+      const userBubble = document.createElement('div');
+      userBubble.className = 'message-bubble message-bubble--user fade-in';
+      userBubble.innerHTML = `<div class="message-bubble__label">Her message</div><div>${esc(text)}</div>`;
+      chat.appendChild(userBubble);
+
+      // Loading
+      const loading = document.createElement('div');
+      loading.className = 'message-bubble message-bubble--ai fade-in';
+      loading.innerHTML = `
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+          <span style="font-weight:600;">Mikey analyzing...</span>
+        </div>
+        <div class="skeleton skeleton--heading"></div>
+        <div class="skeleton skeleton--text"></div>
+        <div class="skeleton skeleton--text" style="width:60%;"></div>
+      `;
+      chat.appendChild(loading);
+      chat.scrollTop = chat.scrollHeight;
+
+      try {
+        const resp = await fetch('/api/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text })
+        });
+        const result = await resp.json();
+        loading.remove();
+
+        if (result.error) {
+          const errBubble = document.createElement('div');
+          errBubble.className = 'message-bubble message-bubble--ai fade-in';
+          errBubble.innerHTML = `<div style="color:var(--brand-danger);">Error: ${esc(result.error)}</div>`;
+          chat.appendChild(errBubble);
+        } else {
+          renderAnalysis(chat, text, result);
+        }
+      } catch (err) {
+        loading.remove();
+        const errBubble = document.createElement('div');
+        errBubble.className = 'message-bubble message-bubble--ai fade-in';
+        errBubble.innerHTML = `<div style="color:var(--brand-danger);">Connection error: ${esc(err.message)}</div>`;
+        chat.appendChild(errBubble);
+      }
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    /* === Render AI Result === */
+    function renderAnalysis(container, originalText, result) {
+      const d = result.diagnosis || {};
+      const responses = result.responses || [];
+      const tempPercent = ((d.temperature || 5) / 10) * 100;
+
+      const html = `
+        <div class="analysis-card fade-in">
+          <div class="analysis-card__header">
+            <div class="analysis-card__header-icon">M</div>
+            <div class="analysis-card__header-title">Mikey Analysis</div>
+          </div>
+          <div class="analysis-card__body">
+            <div class="diagnosis-section fade-in stagger-1">
+              <div class="diagnosis-section__title">Diagnosis</div>
+              <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                <span class="stage-badge">${esc(d.stage || 'unknown')}</span>
+              </div>
+              <div class="temp-meter">
+                <span class="temp-meter__label">Temperature</span>
+                <div class="temp-meter__bar"><div class="temp-meter__fill" style="width:${tempPercent}%"></div></div>
+                <span class="temp-meter__label">${esc(d.temperatureLabel || '')}</span>
+              </div>
+            </div>
+
+            ${d.subtext ? `
+            <div class="subtext-card fade-in stagger-2">
+              <div class="diagnosis-section__title">Real Meaning</div>
+              <div class="subtext-card__original">She said: "${esc(originalText)}"</div>
+              <div class="subtext-card__meaning">${esc(d.subtext)}</div>
+            </div>` : ''}
+
+            ${d.mines && d.mines.length > 0 ? `
+            <div class="minefield fade-in stagger-3">
+              <div class="minefield__title">Avoid</div>
+              ${d.mines.map(m => `<div class="minefield__item">${esc(m)}</div>`).join('')}
+            </div>` : ''}
+
+            <div style="margin-top:8px;">
+              <div class="diagnosis-section__title" style="margin-bottom:12px;">Response Options</div>
+              <div class="grid-responses">
+                ${responses.map((r, i) => `
+                  <div class="response-option response-option--${r.type} fade-in stagger-${i+1}" onclick="selectResponse(this, '${esc(r.text).replace(/'/g, "\\'")}')">
+                    <div class="response-option__tag">${esc(r.tag)}</div>
+                    <div class="response-option__text">${esc(r.text)}</div>
+                    <div class="response-option__explanation">${esc(r.why)}</div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            ${result.recommendation ? `
+            <div style="margin-top:12px;padding:12px 16px;background:var(--bg-tertiary);border-radius:10px;font-size:14px;">
+              <strong>Mikey's pick:</strong> ${esc(result.recommendation)}
+            </div>` : ''}
+
+            ${result.rawText ? `
+            <details style="margin-top:12px;font-size:13px;color:var(--text-tertiary);">
+              <summary style="cursor:pointer;">Show raw AI response</summary>
+              <pre style="white-space:pre-wrap;margin-top:8px;padding:12px;background:var(--bg-primary);border-radius:8px;font-size:12px;max-height:300px;overflow:auto;">${esc(result.rawText)}</pre>
+            </details>` : ''}
+          </div>
+        </div>
+      `;
+
+      const wrapper = document.createElement('div');
+      wrapper.style.alignSelf = 'stretch';
+      wrapper.innerHTML = html;
+      container.appendChild(wrapper);
+    }
+
+    function selectResponse(el, text) {
+      el.closest('.grid-responses').querySelectorAll('.response-option').forEach(e => e.classList.remove('response-option--selected'));
+      el.classList.add('response-option--selected');
+      const existing = el.closest('.analysis-card__body').querySelector('.action-bar');
+      if (existing) existing.remove();
+      const bar = document.createElement('div');
+      bar.className = 'action-bar fade-in';
+      bar.innerHTML = `<button class="action-bar__btn action-bar__btn--copy" onclick="copyText('${text.replace(/'/g, "\\'")}')">Copy Response</button>`;
+      el.closest('.analysis-card__body').appendChild(bar);
+      bar.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function copyText(text) {
+      navigator.clipboard.writeText(text).then(() => showToast('Copied!')).catch(() => showToast('Copy failed', 'error'));
+    }
+
+    function showToast(msg, type) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'toast toast--visible' + (type === 'error' ? ' toast--error' : ' toast--success');
+      setTimeout(() => { t.className = 'toast'; }, 2000);
+    }
+
+    function esc(str) {
+      if (!str) return '';
+      const d = document.createElement('div');
+      d.textContent = str;
+      return d.innerHTML;
+    }
+
+    /* === Settings === */
+    async function loadSettings() {
+      try {
+        const resp = await fetch('/api/config');
+        const data = await resp.json();
+        document.getElementById('settings-telegram').placeholder = data.telegramBotToken || 'Not set';
+        document.getElementById('settings-claude').placeholder = data.claudeApiKey || 'Not set';
+        document.getElementById('settings-model').value = data.claudeModel || 'claude-sonnet-4-20250514';
+      } catch {}
+    }
+
+    async function saveSettings() {
+      const body = {};
+      const t = document.getElementById('settings-telegram').value.trim();
+      const c = document.getElementById('settings-claude').value.trim();
+      const m = document.getElementById('settings-model').value.trim();
+      if (t) body.telegramBotToken = t;
+      if (c) body.claudeApiKey = c;
+      if (m) body.claudeModel = m;
+
+      try {
+        const resp = await fetch('/api/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await resp.json();
+        document.getElementById('settings-status').textContent = data.message || 'Saved';
+        document.getElementById('settings-status').style.color = data.ok ? 'var(--brand-success)' : 'var(--brand-danger)';
+        document.getElementById('settings-telegram').value = '';
+        document.getElementById('settings-claude').value = '';
+        loadSettings();
+        checkStatus();
+      } catch (err) {
+        document.getElementById('settings-status').textContent = 'Error: ' + err.message;
+        document.getElementById('settings-status').style.color = 'var(--brand-danger)';
+      }
+    }
+  </script>
+</body>
+</html>
